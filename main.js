@@ -86,7 +86,8 @@
     removeAllAnswers();
 
     if (gameState.currentIndex < gameState.quizzes.length) {
-      makeQuiz(gameState.quizzes);
+      const quiz = gameState.quizzes[gameState.currentIndex];
+      makeQuiz(quiz);
     } else {
       finishQuiz();
     }
@@ -136,17 +137,17 @@
   // - 戻り値無し
   //   - 無し
   function makeQuiz(quiz) {
-    pQuestion.textContent = unescapeHTML(quiz[gameState.currentIndex].question);
+    pQuestion.textContent = unescapeHTML(quiz.question);
 
-    const shuffleAnswers = answerShuffle();
+    const answers = shuffleAnswers(quiz);
 
-    shuffleAnswers.forEach((answer) => {
+    answers.forEach((answer) => {
       const liAnswer = document.createElement('li');
       liAnswer.textContent = unescapeHTML(answer);
       ulAnswerContainer.appendChild(liAnswer);
 
       liAnswer.addEventListener('click', (event) => {
-        const unescapeAnswer = unescapeHTML(quiz[gameState.currentIndex].correct_answer);
+        const unescapeAnswer = unescapeHTML(quiz.correct_answer);
         //クリックしたのが正解
         if (unescapeAnswer === event.target.textContent) {
           gameState.numberOfCorrects++;
@@ -164,12 +165,12 @@
 
   // quizオブジェクトの中にあるcorrect_answer, incorrect_answersを結合して
   // 正解・不正解の解答をシャッフルする。
-  const answerShuffle = () => {
+  const shuffleAnswers = (quiz) => {
     const correctAnswers = [];
-    gameState.quizzes[gameState.currentIndex].incorrect_answers.forEach((answer) => {
-      correctAnswers.push(answer);
+    quiz.incorrect_answers.forEach((answers) => {
+      correctAnswers.push(answers);
     });
-    correctAnswers.push(gameState.quizzes[gameState.currentIndex].correct_answer);
+    correctAnswers.push(quiz.correct_answer);
 
     return shuffle(correctAnswers);
   };
@@ -187,7 +188,7 @@
   const shuffle = (array) => {
     const shuffledArray = array.slice();
     for (let i = shuffledArray.length - 1; i >= 0; i--){
-      let rand = Math.floor(Math.random() * (i + 1));
+      const rand = Math.floor(Math.random() * (i + 1));
       [shuffledArray[i], shuffledArray[rand]] = [shuffledArray[rand], shuffledArray[i]];
     }
 
