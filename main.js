@@ -167,8 +167,8 @@
   // 正解・不正解の解答をシャッフルする。
   const shuffleAnswers = (quiz) => {
     const correctAnswers = [];
-    quiz.incorrect_answers.forEach((answers) => {
-      correctAnswers.push(answers);
+    quiz.incorrect_answers.forEach((answer) => {
+      correctAnswers.push(answer);
     });
     correctAnswers.push(quiz.correct_answer);
 
