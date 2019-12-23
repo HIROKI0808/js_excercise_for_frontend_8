@@ -13,16 +13,27 @@
   //   - quizzes : fetchで取得したクイズデータの配列(resutls)を保持する
   //   - currentIndex : 現在何問目のクイズに取り組んでいるのかをインデックス番号で保持する
   //   - numberOfCorrects : 正答数を保持するう
-
+  const gameState = {
+    quizzes: [],
+    currentIndex: 0,
+    numberOfCorrects: 0
+  };
 
   // HTMLのid値がセットされているDOMを取得する
-
+  const pQuestion = document.getElementById('question');
+  const ulAnswerContainer = document.getElementById('answers');
+  const pResult = document.getElementById('result');
+  const restartButton = document.getElementById('restart-button');
 
   // ページの読み込みが完了したらクイズ情報を取得する
-
+  window.addEventListener('load', (event) => {
+    fetchQuizData();
+  });
 
   // 「Restart」ボタンをクリックしたら再度クイズデータを取得する
-
+  restartButton.addEventListener('click', (event) => {
+    fetchQuizData();
+  });
 
 
   // `fetchQuizData関数`を実装する
@@ -42,21 +53,45 @@
   //   - 無し
   // - 戻り値
   //   - 無し
+  function fetchQuizData() {
+    pQuestion.textContent = 'Now loading...';
+    pResult.textContent = '';
+    restartButton.style.display = "none";
+    fetch(API_URL)
+      .then(response => response.json())
+      .then(data => {
 
+        gameState.quizzes = data.results;
+        gameState.currentIndex = 0;
+        gameState.numberOfCorrects = 0;
 
-  // setNextQuiz関数を実装する
-  // - 実現したいこと
-  //   - 表示要素をリセットする
-  //     - 問題文を空にする
-  //     - 解答一覧を全て消す
-  //   - 条件に応じて、次の問題の表示 or 結果を表示する
-  //     - 次の問題がまだ存在すれば次の問題をセットする
-  //     - 直前に解答したのが最後の問題であれば結果を表示する(finishQuiz関数を実行する)
-  // - 引数
+        setNextQuiz();
+      });
+  }
+
+    // setNextQuiz関数を実装する
+    // - 実現したいこと
+    //   - 表示要素をリセットする
+    //     - 問題文を空にする
+    //     - 解答一覧を全て消す
+    //   - 条件に応じて、次の問題の表示 or 結果を表示する
+    //     - 次の問題がまだ存在すれば次の問題をセットする
+    //     - 直前に解答したのが最後の問題であれば結果を表示する(finishQuiz関数を実行する)
+    // - 引数
+    //   - 無し
+    // - 戻り値
   //   - 無し
-  // - 戻り値
-  //   - 無し
+  const setNextQuiz = () => {
+    pQuestion.textContent = '';
+    removeAllAnswers();
 
+    if (gameState.currentIndex < gameState.quizzes.length) {
+      const quiz = gameState.quizzes[gameState.currentIndex];
+      makeQuiz(quiz);
+    } else {
+      finishQuiz();
+    }
+  };
 
   // finishQuiz関数を実装する
   // - 実現したいこと
@@ -66,7 +101,11 @@
   //   - 無し
   // - 戻り値
   //   - 無し
-
+  const finishQuiz = () => {
+    pQuestion.textContent = '';
+    pResult.textContent = `${gameState.numberOfCorrects} / ${gameState.quizzes.length} corrects`;
+    restartButton.style.display = "block";
+  };
 
   // removeAllAnswers関数を実装する
   // - 実現したいこと
@@ -75,6 +114,11 @@
   //   - 無し
   // - 戻り値
   //   - 無し
+  const removeAllAnswers = () => {
+    while (ulAnswerContainer.firstChild) {
+      ulAnswerContainer.removeChild(ulAnswerContainer.firstChild);
+    }
+  };
 
 
   // makeQuiz関数を実装する
@@ -92,11 +136,44 @@
   //   - オブジェクト(クイズデータ1件)
   // - 戻り値無し
   //   - 無し
+  function makeQuiz(quiz) {
+    pQuestion.textContent = unescapeHTML(quiz.question);
 
+    const answers = shuffleAnswers(quiz);
+
+    answers.forEach((answer) => {
+      const liAnswer = document.createElement('li');
+      liAnswer.textContent = unescapeHTML(answer);
+      ulAnswerContainer.appendChild(liAnswer);
+
+      liAnswer.addEventListener('click', (event) => {
+        const unescapeAnswer = unescapeHTML(quiz.correct_answer);
+        //クリックしたのが正解
+        if (unescapeAnswer === event.target.textContent) {
+          gameState.numberOfCorrects++;
+          alert('Correct answer!!');
+        //クリックしたのが不正解
+        } else {
+          alert('Wrong answer... (The correct answer is "' + unescapeAnswer + '")');
+        }
+        gameState.currentIndex++;
+
+        setNextQuiz();
+      });
+    });
+  }
 
   // quizオブジェクトの中にあるcorrect_answer, incorrect_answersを結合して
   // 正解・不正解の解答をシャッフルする。
+  const shuffleAnswers = (quiz) => {
+    const correctAnswers = [];
+    quiz.incorrect_answers.forEach((answer) => {
+      correctAnswers.push(answer);
+    });
+    correctAnswers.push(quiz.correct_answer);
 
+    return shuffle(correctAnswers);
+  };
 
   // `shuffle関数` を実装する
   // - 実現したいこと
@@ -108,7 +185,15 @@
   //   - array : 配列
   // - 戻り値
   //   - shffuledArray : シャッフル後の配列(引数の配列とは別の配列であることに注意する)
+  const shuffle = (array) => {
+    const shuffledArray = array.slice();
+    for (let i = shuffledArray.length - 1; i >= 0; i--){
+      const rand = Math.floor(Math.random() * (i + 1));
+      [shuffledArray[i], shuffledArray[rand]] = [shuffledArray[rand], shuffledArray[i]];
+    }
 
+    return shuffledArray;
+  };
 
 
   // unescapeHTML関数を実装する
@@ -120,5 +205,14 @@
   //   - 文字列
   // - 戻り値
   //   - 文字列
+  const unescapeHTML = (str) => {
+    const div = document.createElement("div");
+    div.innerHTML = str.replace(/</g, "&lt")
+                       .replace(/>/g, "&gt;")
+                       .replace(/ /g, "&nbsp;")
+                       .replace(/\r/g, "&#13")
+                       .replace(/\n/g, "&#10")
+    return div.textContent || div.innerText;
+  };
 
 })();
