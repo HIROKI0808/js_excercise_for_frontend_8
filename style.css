@@ -1,0 +1,41 @@
+body {
+	background-color: #F1F1F1;
+	margin: 0 auto;
+}
+
+h1 {
+	text-align: center;
+}
+
+.container {
+	width: 80%;
+	margin: 0 auto;
+	text-align: center;
+}
+
+p {
+	margin-top: 0;
+	word-break: break-all;
+}
+
+ul {
+	padding: 0;
+	list-style-type: none;
+}
+
+li {
+	border-radius: 10px;
+	background: white;
+	border: 1px solid black;
+	line-height:  3em;
+	height: 3em;
+	margin-bottom: 20px;
+}
+
+li:hover {
+	background: #ADC6FF;
+}
+
+button {
+	margin: 0 auto;
+}
